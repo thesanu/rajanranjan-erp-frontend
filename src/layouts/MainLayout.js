@@ -110,14 +110,13 @@ const MainLayout = () => {
           <i className="bi bi-box-arrow-right"></i>
         </button>
       </header>
-
       <div className="app-layout d-flex">
         {/* Sidebar */}
         <aside className={`sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Sidebar">
           <div className="sidebar-header d-flex align-items-center justify-content-between p-3">
             <Link to="/" className="d-flex align-items-center gap-3 logo-link" aria-label="Home">
               <img
-                src="/logo192.png"
+                // src="/logo192.png"
                 alt="Logo"
                 className="logo"
                 style={{ width: '100%', height: 'auto', objectFit: 'contain' }} // fit container, no crop, no rounding
@@ -126,8 +125,6 @@ const MainLayout = () => {
             </Link>
             {/* Removed the close button */}
           </div>
-
-
           <div className="sidebar-content p-3 overflow-auto">
             <SidebarSection
               title="Masters"
@@ -171,13 +168,32 @@ const MainLayout = () => {
         </aside>
 
         {/* Main content */}
-        <main className="content p-4" role="main">
+        <main className="content" role="main">
           <Outlet />
         </main>
       </div>
-
       {/* Styles */}
       <style>{`
+
+.content {
+  flex-grow: 1;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+@media (max-width: 767.98px) {
+  .content {
+    margin: 80px 12px 16px 12px;
+    border-radius: 10px;
+    padding: 18px;
+  }
+}
 
 .sidebar-footer {
   padding: 1rem;
@@ -198,12 +214,12 @@ a { text-decoration: none; color: inherit; }
   z-index: -1;
   background: linear-gradient(
     135deg,
-    #fdfcfb 0%,
-    #f3e7e9 20%,
-    #e3eeff 40%,
-    #e7f0fd 60%,
-    #fef6e4 80%,
-    #fdfcfb 100%
+    #fefdfc 0%,
+    #fbf4f6 20%,
+    #f0f5ff 40%,
+    #f3f7fe 60%,
+    #fff9e9 80%,
+    #fefdfc 100%
   );
   background-attachment: fixed;
   background-size: cover;

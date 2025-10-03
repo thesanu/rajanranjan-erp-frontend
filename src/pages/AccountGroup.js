@@ -12,6 +12,8 @@ import Papa from 'papaparse';
 import { BsPlus, BsPencil, BsTrash, BsUpload, BsDownload, BsFileEarmarkArrowDown, BsSearch, BsFilter, BsArrowDownUp } from 'react-icons/bs';
 import api from '../services/api';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { BeatLoader } from 'react-spinners';
+
 
 
 const PAGE_SIZE = 10;
@@ -139,7 +141,7 @@ export default function AccountGroup() {
         : isAdmin && user?.companyId
           ? { companyProfileId: Number(user.companyId) }
           : {}),
-      ...(editing ? { groupID: editing.groupID } : {})
+      ...(editing ? { GroupID: editing.groupID } : {})
     };
 
 
@@ -301,7 +303,7 @@ export default function AccountGroup() {
 
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h5 className="mb-0">Account Groups</h5>
+        <h5 className="mb-0" style={{ color: 'rgba(17, 82, 73, 0.95)' }}>Account Groups</h5>
         <Button
           size="sm"
           onClick={openCreate}
@@ -464,7 +466,17 @@ export default function AccountGroup() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={isGlobal ? 5 : 4}>Loading...</td></tr>
+              <tr>
+                <td colSpan={isGlobal ? 5 : 4} className="text-center py-4">
+                  <BeatLoader
+                    size={10}
+                    margin={4}
+                    color="#177366" // match your green theme
+                    loading={true}
+                    speedMultiplier={1.5}
+                  />
+                </td>
+              </tr>
             ) : pageRows.length === 0 ? (
               <tr><td colSpan={isGlobal ? 5 : 4} className="text-center">No data</td></tr>
             ) : (
@@ -483,7 +495,7 @@ export default function AccountGroup() {
                         onClick={() => openEdit(r)}
                         title="Edit"
                         style={{
-                          backgroundColor: '#4CAF50', 
+                          backgroundColor: '#2d642fff',
                           color: '#fff',
                           borderRadius: '50px',  // Elliptical shape
                           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.25)', // 3D shadow effect
@@ -494,7 +506,7 @@ export default function AccountGroup() {
                           gap: '4px',
                         }}
                       >
-                     
+
                         Edit
                       </button>
 
@@ -506,7 +518,7 @@ export default function AccountGroup() {
                           onClick={() => confirmDelete(r)}
                           title="Delete"
                           style={{
-                            backgroundColor: '#e02e2a',  
+                            backgroundColor: '#e02e2a',
                             color: '#fff',
                             borderRadius: '50px',  // Elliptical shape
                             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.25)', // 3D shadow effect
@@ -517,7 +529,7 @@ export default function AccountGroup() {
                             gap: '4px',
                           }}
                         >
-                  
+
                           Delete
                         </button>
                       )}
@@ -544,8 +556,10 @@ export default function AccountGroup() {
       {/* Modal */}
       <Modal show={show} onHide={() => setShow(false)} centered>
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Modal.Header closeButton>
-            <Modal.Title className="fs-6">{editing ? 'Edit Group' : 'New Group'}</Modal.Title>
+          <Modal.Header closeButton className="custom-modal-header">
+            <Modal.Title className="fs-6 modal-title-custom">
+              {editing ? "Edit Group" : "New Group"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {error && <div className="alert alert-danger py-1">{error}</div>}
@@ -629,6 +643,26 @@ export default function AccountGroup() {
           </Modal.Footer>
         </Form>
       </Modal>
+      <style>
+        {
+
+          `.modal-title-custom {
+  color: #fff; /* white text */
+}
+
+.custom-modal-header {
+  background-color: rgba(23,115,102,0.95); /* your green */
+  color: #fff;
+}
+
+/* Make close button icon white */
+.custom-modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+          `
+        }
+      </style>
     </div>
   );
 }

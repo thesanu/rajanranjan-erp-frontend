@@ -21,7 +21,10 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 /* Global background gradient */
-.bg-gradient {
+.app-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background: linear-gradient(
     135deg,
     #fdfcfb 0%,
@@ -31,5 +34,21 @@ body {
     #fef6e4 80%,
     #fdfcfb 100%
   );
-  min-height: 100vh;
+  background-attachment: fixed;
+  background-size: cover;
+  pointer-events: none;
 }
+
+.Toastify__toast--error {
+  color: rgba(23, 115, 102, 0.95) !important; /* text color */
+}
+
+.Toastify__progress-bar--error {
+  background: rgba(23, 115, 102, 0.95) !important; /* progress bar */
+}
+
+.Toastify__icon--error svg {
+  fill: rgba(23, 115, 102, 0.95) !important; /* icon fill */
+  stroke: rgba(23, 115, 102, 0.95) !important; /* icon stroke */
+}
+
