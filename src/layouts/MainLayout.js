@@ -116,7 +116,7 @@ const MainLayout = () => {
           <div className="sidebar-header d-flex align-items-center justify-content-between p-3">
             <Link to="/" className="d-flex align-items-center gap-3 logo-link" aria-label="Home">
               <img
-                // src="/logo192.png"
+                 src="/logo192.png"
                 alt="Logo"
                 className="logo"
                 style={{ width: '100%', height: 'auto', objectFit: 'contain' }} // fit container, no crop, no rounding
