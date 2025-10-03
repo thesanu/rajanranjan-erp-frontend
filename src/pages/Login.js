@@ -99,7 +99,7 @@ export default function Login() {
           <Card className="p-4 shadow-lg w-100">
             {isLoading && <LoaderOverlay />}
             <div className="text-center mb-4">
-              {/* <img src="/logo192.png" alt="logo" className="mb-3" style={{ width: '250px' }} /> */}
+            <img src="/logo192.png" alt="logo" className="mb-3" style={{ width: '250px' }} />
               <h3 className="fw-bold" style={{ color: 'rgba(3, 53, 46, 0.95)' }}>
                 Welcome Back
               </h3>
