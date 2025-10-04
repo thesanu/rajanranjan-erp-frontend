@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { BsPlus, BsPencil, BsTrash, BsUpload, BsDownload, BsFileEarmarkArrowDown, BsSearch, BsFilter, BsArrowDownUp } from 'react-icons/bs';
 import api from '../services/api';
+import { BeatLoader } from 'react-spinners';
 
 const PAGE_SIZE = 10;
 
@@ -73,7 +74,7 @@ export default function AreaMaster() {
     try {
       setLoading(true);
       setError('');
-      let url = '/Areas';  
+      let url = '/Areas';
       const params = new URLSearchParams();
 
       // Admins see their own company
@@ -273,7 +274,7 @@ export default function AreaMaster() {
   return (
     <div className="container-fluid">
       <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h5 className="mb-0">Areas</h5>
+        <h5 className="mb-0" style={{ color: 'rgba(17, 82, 73, 0.95)' }}>Areas</h5>
         <Button size="sm" onClick={openCreate} style={{ backgroundColor: '#0d6efd', borderColor: '#0a58ca', borderRadius: '50px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)' }}>
           <BsPlus className="me-1" /> Add
         </Button>
@@ -332,9 +333,23 @@ export default function AreaMaster() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={user?.role === 'GlobalAdmin' ? 5 : 4}>Loading...</td></tr>
+              <tr>
+                <td colSpan={user?.role === 'GlobalAdmin' ? 5 : 4} className="text-center py-4">
+                  <BeatLoader
+                    size={10}
+                    margin={4}
+                    color="#177366" // match your green theme
+                    loading={true}
+                    speedMultiplier={1.5}
+                  />
+                </td>
+              </tr>
             ) : pageRows.length === 0 ? (
-              <tr><td colSpan={user?.role === 'GlobalAdmin' ? 5 : 4} className="text-center">No data</td></tr>
+              <tr>
+                <td colSpan={user?.role === 'GlobalAdmin' ? 5 : 4} className="text-center">
+                  No data
+                </td>
+              </tr>
             ) : (
               pageRows.map(r => (
                 <tr key={r.areaID}>
@@ -344,8 +359,32 @@ export default function AreaMaster() {
                   {user?.role === 'GlobalAdmin' && <td>{companyMap[r.companyProfileId] || '-'}</td>}
                   <td className="text-end">
                     <div className="d-flex gap-2 justify-content-end">
-                      <button type="button" className="btn btn-sm" onClick={() => openEdit(r)} style={{ backgroundColor: '#4CAF50', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.25)', color: '#fff', borderRadius: '50px' }}>Edit</button>
-                      <button type="button" className="btn btn-sm" onClick={() => confirmDelete(r)} style={{ backgroundColor: '#e02e2a', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.25)', color: '#fff', borderRadius: '50px' }}>Delete</button>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => openEdit(r)}
+                        style={{
+                          backgroundColor: '#2d642fff',
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.25)',
+                          color: '#fff',
+                          borderRadius: '50px',
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => confirmDelete(r)}
+                        style={{
+                          backgroundColor: '#e02e2a',
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.25)',
+                          color: '#fff',
+                          borderRadius: '50px',
+                        }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -365,9 +404,12 @@ export default function AreaMaster() {
 
       <Modal show={show} onHide={() => setShow(false)} centered>
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Modal.Header closeButton>
-            <Modal.Title className="fs-6">{editing ? 'Edit Area' : 'New Area'}</Modal.Title>
+          <Modal.Header closeButton className="custom-modal-header">
+            <Modal.Title className="fs-6 modal-title-custom">
+              {editing ? 'Edit Area' : 'New Area'}
+            </Modal.Title>
           </Modal.Header>
+
           <Modal.Body>
             {error && <div className="alert alert-danger py-1">{error}</div>}
 
@@ -404,6 +446,27 @@ export default function AreaMaster() {
           </Modal.Footer>
         </Form>
       </Modal>
+
+      <style>
+        {
+
+          `.modal-title-custom {
+  color: #fff; /* white text */
+}
+
+.custom-modal-header {
+  background-color: rgba(23,115,102,0.95); /* your green */
+  color: #fff;
+}
+
+/* Make close button icon white */
+.custom-modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+          `
+        }
+      </style>
     </div>
   )
 }
