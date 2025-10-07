@@ -12,7 +12,7 @@ import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { saveAs } from 'file-saver';
-
+import { BeatLoader } from 'react-spinners';
 const PAGE_SIZE = 10;
 
 export default function Design() {
@@ -250,8 +250,17 @@ export default function Design() {
     <div className="container-fluid">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h5 className="mb-0">Design Master</h5>
-        <Button size="sm" onClick={openCreate} style={{ borderRadius: '50px' }}>
+          <h5 className="mb-0" style={{ color: 'rgba(17, 82, 73, 0.95)' }}>Design Master</h5>
+        <Button
+          size="sm"
+          onClick={openCreate}
+          style={{
+            backgroundColor: "#0d6efd",
+            borderRadius: "50px",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+            color: "#fff",
+          }}
+        >
           <BsPlus className="me-1" /> Add
         </Button>
       </div>
@@ -265,7 +274,10 @@ export default function Design() {
                 <InputGroup.Text><BsFilter /></InputGroup.Text>
                 <Form.Select
                   value={companyFilter}
-                  onChange={(e) => { setCompanyFilter(e.target.value); setPage(1); }}
+                  onChange={(e) => {
+                    setCompanyFilter(e.target.value);
+                    setPage(1);
+                  }}
                 >
                   <option value="">All Companies</option>
                   {companies.map(c => (
@@ -284,24 +296,62 @@ export default function Design() {
               <Form.Control
                 placeholder="Search..."
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
               />
             </InputGroup>
           </div>
 
           {/* Export & Import */}
           <div className="col-md-auto d-flex flex-wrap gap-2">
-            <Button size="sm" onClick={exportCSV} style={{ borderRadius: '50px' }}>
+            <Button
+              size="sm"
+              onClick={exportCSV}
+              style={{
+                backgroundColor: "#0dcaf0",
+                borderColor: "#31d2f2",
+                borderRadius: "50px",
+                color: "#fff",
+              }}
+            >
               <BsDownload className="me-1" /> CSV
             </Button>
-            <Button size="sm" onClick={exportExcel} variant="success" style={{ borderRadius: '50px' }}>
+            <Button
+              size="sm"
+              onClick={exportExcel}
+              style={{
+                backgroundColor: "#198754",
+                borderColor: "#157347",
+                borderRadius: "50px",
+                color: "#fff",
+              }}
+            >
               <BsDownload className="me-1" /> Excel
             </Button>
-            <Button size="sm" onClick={downloadSample} variant="warning" style={{ borderRadius: '50px' }}>
+            <Button
+              size="sm"
+              onClick={downloadSample}
+              style={{
+                backgroundColor: "#ffc107",
+                borderColor: "#ffca2c",
+                borderRadius: "50px",
+                color: "#212529",
+              }}
+            >
               <BsFileEarmarkArrowDown className="me-1" /> Sample
             </Button>
             <Form.Group controlId="import" className="mb-0">
-              <Form.Label className="btn btn-sm btn-primary mb-0" style={{ borderRadius: '50px' }}>
+              <Form.Label
+                className="btn btn-sm mb-0"
+                style={{
+                  backgroundColor: "#0d6efd",
+                  borderRadius: "50px",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
                 <BsUpload /> Import
                 <Form.Control
                   ref={fileInputRef}
@@ -321,7 +371,9 @@ export default function Design() {
         <Table hover size="sm" className="mb-0 align-middle">
           <thead className="table-light">
             <tr>
-              <th role="button" onClick={() => toggleSort('designName')}>Design <BsArrowDownUp className="ms-1" /></th>
+              <th role="button" onClick={() => toggleSort('designName')}>
+                Design <BsArrowDownUp className="ms-1" />
+              </th>
               {isGlobal && <th>Company</th>}
               <th>Active</th>
               <th className="text-end">Actions</th>
@@ -329,9 +381,23 @@ export default function Design() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={isGlobal ? 4 : 3}>Loading...</td></tr>
+              <tr>
+                <td colSpan={isGlobal ? 4 : 3} className="text-center py-4">
+                  <BeatLoader
+                    size={10}
+                    margin={4}
+                    color="#177366"
+                    loading={true}
+                    speedMultiplier={1.5}
+                  />
+                </td>
+              </tr>
             ) : pageRows.length === 0 ? (
-              <tr><td colSpan={isGlobal ? 4 : 3} className="text-center">No data</td></tr>
+              <tr>
+                <td colSpan={isGlobal ? 4 : 3} className="text-center">
+                  No data
+                </td>
+              </tr>
             ) : (
               pageRows.map(r => (
                 <tr key={r.designID}>
@@ -340,8 +406,30 @@ export default function Design() {
                   <td>{r.isActive ? 'Yes' : 'No'}</td>
                   <td className="text-end">
                     <div className="d-flex gap-2 justify-content-end">
-                      <button className="btn btn-sm btn-success" onClick={() => openEdit(r)}>Edit</button>
-                      <button className="btn btn-sm btn-danger" onClick={() => confirmDelete(r)}>Delete</button>
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => openEdit(r)}
+                        style={{
+                          backgroundColor: "#4CAF50",
+                          color: "#fff",
+                          borderRadius: "50px",
+                          boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => confirmDelete(r)}
+                        style={{
+                          backgroundColor: "#e02e2a",
+                          color: "#fff",
+                          borderRadius: "50px",
+                          boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -354,19 +442,34 @@ export default function Design() {
       {/* Pagination */}
       <div className="d-flex justify-content-between align-items-center mt-2">
         <small className="text-muted">
-          Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+          Showing {(page - 1) * PAGE_SIZE + 1}-
+          {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
         </small>
         <div className="btn-group btn-group-sm">
-          <Button variant="outline-secondary" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
-          <Button variant="outline-secondary" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+          <Button
+            variant="outline-secondary"
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+          >
+            Prev
+          </Button>
+          <Button
+            variant="outline-secondary"
+            disabled={page === totalPages}
+            onClick={() => setPage(p => p + 1)}
+          >
+            Next
+          </Button>
         </div>
       </div>
 
       {/* Modal Form */}
       <Modal show={show} onHide={() => setShow(false)} centered>
         <Form onSubmit={onSubmit}>
-          <Modal.Header closeButton>
-            <Modal.Title className="fs-6">{editing ? 'Edit Design' : 'New Design'}</Modal.Title>
+          <Modal.Header closeButton className="custom-modal-header">
+            <Modal.Title className="fs-6 modal-title-custom">
+              {editing ? 'Edit Design' : 'New Design'}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {error && <div className="alert alert-danger py-1">{error}</div>}
@@ -385,7 +488,9 @@ export default function Design() {
                 <Form.Label className="mb-1">Company</Form.Label>
                 <Form.Select
                   value={form.companyProfileId}
-                  onChange={(e) => setForm({ ...form, companyProfileId: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, companyProfileId: e.target.value })
+                  }
                 >
                   <option value="">-- Select Company --</option>
                   {companies.map(c => (
@@ -406,15 +511,46 @@ export default function Design() {
             />
           </Modal.Body>
           <Modal.Footer className="py-2">
-            <Button variant="secondary" size="sm" onClick={() => setShow(false)} style={{ borderRadius: '50px' }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShow(false)}
+              style={{ borderRadius: "50px" }}
+            >
               Cancel
             </Button>
-            <Button type="submit" variant="success" size="sm" style={{ borderRadius: '50px' }}>
+            <Button
+              type="submit"
+              variant="success"
+              size="sm"
+              style={{ borderRadius: "50px" }}
+            >
               {editing ? 'Update' : 'Create'}
             </Button>
           </Modal.Footer>
         </Form>
       </Modal>
+<style>
+        {
+
+          `.modal-title-custom {
+  color: #fff; /* white text */
+}
+
+.custom-modal-header {
+  background-color: rgba(23,115,102,0.95); /* your green */
+  color: #fff;
+}
+
+/* Make close button icon white */
+.custom-modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+          `
+        }
+      </style>
+
     </div>
   );
 }

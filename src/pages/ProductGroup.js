@@ -16,6 +16,7 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import { BeatLoader } from 'react-spinners';
 
 const PAGE_SIZE = 10;
 
@@ -254,248 +255,331 @@ export default function ProductGroup() {
   };
 
   return (
-    <div className="container-fluid">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h5 className="mb-0">Product Groups</h5>
-        <Button
-          size="sm"
-          onClick={openCreate}
-          style={{
-            backgroundColor: "#0d6efd",
-            borderRadius: "50px",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
-          }}
-        >
-          <BsPlus className="me-1" /> Add
-        </Button>
-      </div>
+  <div className="container-fluid">
+    {/* Header */}
+    <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
+      <h5 className="mb-0" style={{ color: 'rgba(17, 82, 73, 0.95)' }}>Products Group</h5>
+      <Button
+        size="sm"
+        onClick={openCreate}
+        style={{
+          backgroundColor: "#0d6efd",
+          borderRadius: "50px",
+          boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+          color: "#fff",
+        }}
+      >
+        <BsPlus className="me-1" /> Add
+      </Button>
+    </div>
 
-      {/* Toolbar */}
-      <div className="border p-2 bg-light mb-2">
-        <div className="row gx-2 gy-2 align-items-center">
-          {isGlobal && (
-            <div className="col-auto">
-              <InputGroup size="sm">
-                <InputGroup.Text>
-                  <BsFilter />
-                </InputGroup.Text>
-                <Form.Select
-                  value={companyFilter}
-                  onChange={(e) => {
-                    setCompanyFilter(e.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="">All Companies</option>
-                  {companies.map((c) => (
-                    <option key={c.companyID} value={c.companyID}>
-                      {c.companyName} ({c.companyID})
-                    </option>
-                  ))}
-                </Form.Select>
-              </InputGroup>
-            </div>
-          )}
-
+    {/* Toolbar */}
+    <div className="border p-2 bg-light mb-2">
+      <div className="row gx-2 gy-2 align-items-center">
+        {isGlobal && (
           <div className="col-auto">
             <InputGroup size="sm">
               <InputGroup.Text>
-                <BsSearch />
+                <BsFilter />
               </InputGroup.Text>
-              <Form.Control
-                placeholder="Search..."
-                value={search}
+              <Form.Select
+                value={companyFilter}
                 onChange={(e) => {
-                  setSearch(e.target.value);
+                  setCompanyFilter(e.target.value);
                   setPage(1);
                 }}
-              />
+              >
+                <option value="">All Companies</option>
+                {companies.map((c) => (
+                  <option key={c.companyID} value={c.companyID}>
+                    {c.companyName} ({c.companyID})
+                  </option>
+                ))}
+              </Form.Select>
             </InputGroup>
           </div>
+        )}
 
-          <div className="col-md-auto d-flex flex-wrap gap-2">
-            <Button size="sm" onClick={exportCSV}>
-              <BsDownload className="me-1" /> CSV
-            </Button>
-            <Button size="sm" onClick={exportExcel} variant="success">
-              <BsDownload className="me-1" /> Excel
-            </Button>
-            <Button size="sm" onClick={downloadSample} variant="warning">
-              <BsFileEarmarkArrowDown className="me-1" /> Sample
-            </Button>
-            <Form.Group controlId="import" className="mb-0">
-              <Form.Label className="btn btn-sm mb-0 btn-primary">
-                <BsUpload /> Import
-                <Form.Control
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  onChange={onImportFile}
-                  hidden
-                />
-              </Form.Label>
-            </Form.Group>
-          </div>
+        <div className="col-auto">
+          <InputGroup size="sm">
+            <InputGroup.Text>
+              <BsSearch />
+            </InputGroup.Text>
+            <Form.Control
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </InputGroup>
+        </div>
+
+        <div className="col-md-auto d-flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            onClick={exportCSV}
+            style={{
+              backgroundColor: "#0dcaf0",
+              borderColor: "#31d2f2",
+              borderRadius: "50px",
+              color: "#fff",
+            }}
+          >
+            <BsDownload className="me-1" /> CSV
+          </Button>
+          <Button
+            size="sm"
+            onClick={exportExcel}
+            style={{
+              backgroundColor: "#198754",
+              borderColor: "#146c43",
+              borderRadius: "50px",
+              color: "#fff",
+            }}
+          >
+            <BsDownload className="me-1" /> Excel
+          </Button>
+          <Button
+            size="sm"
+            onClick={downloadSample}
+            style={{
+              backgroundColor: "#d4a017",
+              borderColor: "#b3880e",
+              borderRadius: "50px",
+              color: "#fff",
+            }}
+          >
+            <BsFileEarmarkArrowDown className="me-1" /> Sample
+          </Button>
+          <Form.Group controlId="import" className="mb-0">
+            <Form.Label
+              className="btn btn-sm mb-0"
+              style={{
+                cursor: "pointer",
+                backgroundColor: "#0d6efd",
+                borderColor: "#0a58ca",
+                borderRadius: "50px",
+                color: "#fff",
+              }}
+            >
+              <BsUpload /> Import
+              <Form.Control
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={onImportFile}
+                hidden
+              />
+            </Form.Label>
+          </Form.Group>
         </div>
       </div>
+    </div>
 
-      {/* Table */}
-      <div className="table-responsive border bg-white">
-        <Table hover size="sm" className="mb-0 align-middle">
-          <thead className="table-light">
+    {/* Table */}
+    <div className="table-responsive border bg-white">
+      <Table hover size="sm" className="mb-0 align-middle">
+        <thead className="table-light">
+          <tr>
+            <th role="button" onClick={() => toggleSort("groupName")}>
+              Group Name <BsArrowDownUp className="ms-1" />
+            </th>
+            <th>Description</th>
+            {isGlobal && <th>Company</th>}
+            <th>Status</th>
+            <th className="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
             <tr>
-              <th role="button" onClick={() => toggleSort("groupName")}>
-                Group Name <BsArrowDownUp className="ms-1" />
-              </th>
-              <th>Description</th>
-              {isGlobal && <th>Company</th>}
-              <th>Status</th>
-              <th className="text-end">Actions</th>
+              <td colSpan={isGlobal ? 5 : 4} className="text-center py-4">
+                <BeatLoader
+                  size={10}
+                  margin={4}
+                  color="#177366"
+                  loading={true}
+                  speedMultiplier={1.5}
+                />
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={isGlobal ? 5 : 4}>Loading...</td>
-              </tr>
-            ) : pageRows.length === 0 ? (
-              <tr>
-                <td colSpan={isGlobal ? 5 : 4} className="text-center">
-                  No data
+          ) : pageRows.length === 0 ? (
+            <tr>
+              <td colSpan={isGlobal ? 5 : 4} className="text-center">
+                No data
+              </td>
+            </tr>
+          ) : (
+            pageRows.map((r) => (
+              <tr key={r.groupID}>
+                <td>{r.groupName}</td>
+                <td>{r.description}</td>
+                {isGlobal && (
+                  <td>
+                    {
+                      companies.find((c) => c.companyID === r.companyProfileId)
+                        ?.companyName || "-"
+                    }
+                  </td>
+                )}
+                <td>{r.isActive ? "Active" : "Inactive"}</td>
+                <td className="text-end">
+                  <div className="d-flex gap-2 justify-content-end">
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => openEdit(r)}
+                      style={{
+                        backgroundColor: "#4CAF50",
+                        color: "#fff",
+                        borderRadius: "50px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.25)",
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => confirmDelete(r)}
+                      style={{
+                        backgroundColor: "#e02e2a",
+                        color: "#fff",
+                        borderRadius: "50px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.25)",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
-            ) : (
-              pageRows.map((r) => (
-                <tr key={r.groupID}>
-                  <td>{r.groupName}</td>
-                  <td>{r.description}</td>
-                  {isGlobal && (
-                    <td>
-                      {companies.find((c) => c.companyID == r.companyProfileId)
-                        ?.companyName || "-"}
-                    </td>
-                  )}
-                  <td>{r.isActive ? "Active" : "Inactive"}</td>
-                  <td className="text-end">
-                    <div className="d-flex gap-2 justify-content-end">
-                      <button
-                        className="btn btn-sm btn-success"
-                        onClick={() => openEdit(r)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => confirmDelete(r)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
+            ))
+          )}
+        </tbody>
+      </Table>
+    </div>
+
+    {/* Pagination */}
+    <div className="d-flex justify-content-between align-items-center mt-2">
+      <small className="text-muted">
+        Showing {(page - 1) * PAGE_SIZE + 1}-
+        {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+      </small>
+      <div className="btn-group btn-group-sm">
+        <Button
+          variant="outline-secondary"
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          Prev
+        </Button>
+        <Button
+          variant="outline-secondary"
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next
+        </Button>
       </div>
+    </div>
 
-      {/* Pagination */}
-      <div className="d-flex justify-content-between align-items-center mt-2">
-        <small className="text-muted">
-          Showing {(page - 1) * PAGE_SIZE + 1}-
-          {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
-        </small>
-        <div className="btn-group btn-group-sm">
-          <Button
-            variant="outline-secondary"
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            Prev
-          </Button>
-          <Button
-            variant="outline-secondary"
-            disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
-      {/* Modal */}
-      <Modal show={show} onHide={() => setShow(false)} centered>
-        <Form onSubmit={handleSave}>
-          <Modal.Header closeButton>
-            <Modal.Title className="fs-6">
-              {editing ? "Edit Group" : "New Group"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form.Group className="mb-2">
-              <Form.Label>Group Name</Form.Label>
-              <Form.Control
-                value={form.groupName}
-                onChange={(e) =>
-                  setForm({ ...form, groupName: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-              />
-            </Form.Group>
-
-            {isGlobal && (
-              <Form.Group className="mb-2">
-                <Form.Label>Company</Form.Label>
-                <Form.Select
-                  value={form.companyProfileId}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      companyProfileId: Number(e.target.value),
-                    })
-                  }
-                  required
-                >
-                  <option value="">-- Select Company --</option>
-                  {companies.map((c) => (
-                    <option key={c.companyID} value={c.companyID}>
-                      {c.companyName} ({c.companyID})
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            )}
-
-            <Form.Check
-              type="checkbox"
-              label="Active"
-              checked={form.isActive}
+    {/* Modal */}
+    <Modal show={show} onHide={() => setShow(false)} centered>
+      <Form onSubmit={handleSave}>
+			    <Modal.Header closeButton className="custom-modal-header">
+            <Modal.Title className="fs-6 modal-title-custom">
+            {editing ? "Edit Group" : "New Group"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-2">
+            <Form.Label>Group Name</Form.Label>
+            <Form.Control
+              value={form.groupName}
               onChange={(e) =>
-                setForm({ ...form, isActive: e.target.checked })
+                setForm({ ...form, groupName: e.target.value })
+              }
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-2">
+            <Form.Label>Description</Form.Label>
+            <Form.Control
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
               }
             />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShow(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="success">
-              Save
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-    </div>
-  );
+          </Form.Group>
+
+          {isGlobal && (
+            <Form.Group className="mb-2">
+              <Form.Label>Company</Form.Label>
+              <Form.Select
+                value={form.companyProfileId}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    companyProfileId: Number(e.target.value),
+                  })
+                }
+                required
+              >
+                <option value="">-- Select Company --</option>
+                {companies.map((c) => (
+                  <option key={c.companyID} value={c.companyID}>
+                    {c.companyName} ({c.companyID})
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          )}
+
+          <Form.Check
+            type="checkbox"
+            label="Active"
+            checked={form.isActive}
+            onChange={(e) =>
+              setForm({ ...form, isActive: e.target.checked })
+            }
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShow(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="success">
+            Save
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
+
+    <style>
+        {
+
+          `.modal-title-custom {
+  color: #fff; /* white text */
+}
+
+.custom-modal-header {
+  background-color: rgba(23,115,102,0.95); /* your green */
+  color: #fff;
+}
+
+/* Make close button icon white */
+.custom-modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+          `
+        }
+      </style>
+      
+  </div>
+);
 }

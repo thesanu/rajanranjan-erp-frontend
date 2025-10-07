@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { saveAs } from 'file-saver';
+import { BeatLoader } from 'react-spinners';
 
 const PAGE_SIZE = 10;
 
@@ -270,7 +271,7 @@ export default function VoucherType() {
     <div className="container-fluid">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h5 className="mb-0">Voucher Type Master</h5>
+        <h5 className="mb-0" style={{ color: 'rgba(17, 82, 73, 0.95)' }}>Voucher Type Master</h5>
         <Button size="sm" onClick={openCreate} style={{ borderRadius: '50px' }}>
           <BsPlus className="me-1" /> Add
         </Button>
@@ -353,9 +354,15 @@ export default function VoucherType() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={isGlobal ? 8 : 7}>Loading...</td></tr>
+              <tr>
+                <td colSpan={isGlobal ? 8 : 7} className="text-center py-4">
+                  <BeatLoader size={10} color="#177366" />
+                </td>
+              </tr>
             ) : pageRows.length === 0 ? (
-              <tr><td colSpan={isGlobal ? 8 : 7} className="text-center">No data</td></tr>
+              <tr>
+                <td colSpan={isGlobal ? 8 : 7} className="text-center">No data</td>
+              </tr>
             ) : (
               pageRows.map(r => (
                 <tr key={r.voucherTypeID}>
@@ -376,6 +383,7 @@ export default function VoucherType() {
               ))
             )}
           </tbody>
+
         </Table>
       </div>
 
@@ -393,8 +401,9 @@ export default function VoucherType() {
       {/* Modal Form */}
       <Modal show={show} onHide={() => setShow(false)} centered>
         <Form onSubmit={onSubmit}>
-          <Modal.Header closeButton>
-            <Modal.Title className="fs-6">{editing ? 'Edit Voucher Type' : 'New Voucher Type'}</Modal.Title>
+          <Modal.Header closeButton className="custom-modal-header">
+            <Modal.Title className="fs-6 modal-title-custom">
+              {editing ? 'Edit Voucher Type' : 'New Voucher Type'}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {error && <div className="alert alert-danger py-1">{error}</div>}
@@ -473,6 +482,26 @@ export default function VoucherType() {
           </Modal.Footer>
         </Form>
       </Modal>
+      <style>
+        {
+
+          `.modal-title-custom {
+  color: #fff; /* white text */
+}
+
+.custom-modal-header {
+  background-color: rgba(23,115,102,0.95); /* your green */
+  color: #fff;
+}
+
+/* Make close button icon white */
+.custom-modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+          `
+        }
+      </style>
     </div>
   );
 }

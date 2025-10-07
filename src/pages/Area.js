@@ -288,7 +288,6 @@ export default function AreaMaster() {
                 <InputGroup.Text><BsFilter /></InputGroup.Text>
                 <Form.Select value={companyFilter} onChange={(e) => { setCompanyFilter(e.target.value); setPage(1); }}>
                   <option value="">All Companies</option>
-                  <option value="">All Companies</option>
                   {companies.map(c => (
                     <option key={c.companyID} value={c.companyID}>
                       {c.companyName} ({c.companyID})
