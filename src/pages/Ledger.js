@@ -12,9 +12,9 @@ import { BsPlus, BsDownload, BsUpload, BsFileEarmarkArrowDown, BsSearch, BsArrow
 import { BeatLoader } from "react-spinners";
 
 import api from "../services/api";
-import { useAuth } from "../contexts/AuthContext";  // import your auth context here
+import { useAuth } from "../contexts/AuthContext";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 13;
 
 export default function Ledger() {
   const { user } = useAuth();
@@ -35,6 +35,7 @@ export default function Ledger() {
   const [sortKey, setSortKey] = useState("ledgerName");
   const [sortDir, setSortDir] = useState("asc");
   const [companyFilter, setCompanyFilter] = useState("");
+  const [importing, setImporting] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -99,12 +100,10 @@ export default function Ledger() {
       let url = "/Ledger";
       const params = new URLSearchParams();
 
-      // If Admin, restrict to their company
       if (isAdmin && user?.companyId) {
         params.append("companyProfileId", user.companyId);
       }
 
-      // If Global, apply filter if selected
       if (isGlobal && companyFilter && !isNaN(companyFilter)) {
         params.append("companyProfileId", companyFilter);
       }
@@ -124,9 +123,8 @@ export default function Ledger() {
   useEffect(() => {
     fetchGroups();
     fetchCompanies();
-  }, []);  // fetch once on mount
+  }, []);
 
-  // refetch ledgers when company filter changes
   useEffect(() => {
     fetchLedgers();
   }, [companyFilter]);
@@ -171,7 +169,6 @@ export default function Ledger() {
       ledgerID: editing?.ledgerID,
     };
 
-    // If Admin (not global), ensure companyProfileId
     if (!isGlobal && isAdmin && user?.companyId) {
       payload.companyProfileId = user.companyId;
     }
@@ -240,7 +237,29 @@ export default function Ledger() {
   };
 
   const exportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filtered);
+    const exportData = filtered.map(row => {
+      const groupName = groups.find(g => g.groupID === row.groupID)?.groupName || "";
+      const companyName = isGlobal ? (companyMap[row.companyProfileId] || "") : "";
+
+      return {
+        ledgerName: row.ledgerName,
+        groupName: groupName,
+        openingBalance: row.openingBalance || 0,
+        balanceType: row.balanceType,
+        isActive: row.isActive,
+        address: row.address || "",
+        city: row.city || "",
+        state: row.state || "",
+        pincode: row.pincode || "",
+        phone: row.phone || "",
+        email: row.email || "",
+        gstin: row.gstin || "",
+        pan: row.pan || "",
+        ...(isGlobal ? { companyName } : {}),
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Ledgers");
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
@@ -248,60 +267,189 @@ export default function Ledger() {
   };
 
   const exportCSV = () => {
-    const csv = Papa.unparse(filtered);
+    const exportData = filtered.map(row => {
+      const groupName = groups.find(g => g.groupID === row.groupID)?.groupName || "";
+      const companyName = isGlobal ? (companyMap[row.companyProfileId] || "") : "";
+
+      return {
+        ledgerName: row.ledgerName,
+        groupName: groupName,
+        openingBalance: row.openingBalance || 0,
+        balanceType: row.balanceType,
+        isActive: row.isActive,
+        address: row.address || "",
+        city: row.city || "",
+        state: row.state || "",
+        pincode: row.pincode || "",
+        phone: row.phone || "",
+        email: row.email || "",
+        gstin: row.gstin || "",
+        pan: row.pan || "",
+        ...(isGlobal ? { companyName } : {}),
+      };
+    });
+
+    const csv = Papa.unparse(exportData);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "ledgers.csv");
   };
 
   const downloadSample = () => {
     const sample = [
-      { ledgerName: "Cash Account", groupID: 1, openingBalance: 0, balanceType: "D", isActive: true, ...(isGlobal ? { companyProfileId: "" } : {}) }
+      {
+        ledgerName: "Cash Account",
+        groupName: "Current Assets",
+        openingBalance: 0,
+        balanceType: "D",
+        isActive: true,
+        address: "123 Market St",
+        city: "New York",
+        state: "NY",
+        pincode: "10001",
+        phone: "5551234567",
+        email: "cash@example.com",
+        gstin: "22AAAAA0000A1Z5",
+        pan: "ABCDE1234F",
+        ...(isGlobal ? { companyName: "Example Company" } : {}),
+      },
     ];
+
     const csv = Papa.unparse(sample);
     saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), "ledger_sample.csv");
   };
+
+const safeBoolean = (val) => {
+  if (typeof val === "boolean") return val;
+  if (!val) return false;
+  const str = val.toString().toLowerCase().trim();
+  return str === "true" || str === "1" || str === "yes";
+};
+
 
   const onImportFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const processRows = async (rows) => {
-      for (const r of rows) {
-        if (!r.ledgerName || !r.groupID) continue;
-        try {
-          await api.post("/Ledger", {
-            ...r,
-            groupID: Number(r.groupID),
-            openingBalance: r.openingBalance ? Number(r.openingBalance) : 0,
-            ...(isGlobal ? { companyProfileId: Number(r.companyProfileId) } : {}),
-            ...(isAdmin && !isGlobal && user?.companyId ? { companyProfileId: user.companyId } : {}),
-          });
-        } catch { /* skip errors */ }
+    if (importing) {
+      toast.warning("Import already in progress");
+      return;
+    }
+
+    setImporting(true);
+    toast.info("Importing... Please wait", { autoClose: false, toastId: "import-loading" });
+
+   const normalize = (str) => (str || "").replace(/\s+/g, " ").trim().toLowerCase();
+
+const processRows = async (rows) => {
+  let successCount = 0;
+  let errorCount = 0;
+  const errors = []; // Collect error details
+
+  for (const r of rows) {
+    if (!r.ledgerName || (!r.groupName && !r.groupID)) {
+      errors.push(`Row with ledger "${r.ledgerName || 'Unknown'}" missing required fields`);
+      errorCount++;
+      continue;
+    }
+
+    try {
+      // Find groupID from groupName
+      let groupID = null;
+      if (r.groupName) {
+        const group = groups.find(g => normalize(g.groupName) === normalize(r.groupName));
+        if (!group) {
+          console.warn(`Group not found: "${r.groupName}"`);
+          errors.push(`Group "${r.groupName}" not found for ledger "${r.ledgerName}"`);
+          errorCount++;
+          continue;
+        }
+        groupID = group.groupID;
+      } else if (r.groupID) {
+        groupID = Number(r.groupID);
       }
-      toast.success("Import completed");
-      fetchLedgers();
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    };
+
+      // Find companyProfileId from companyName for Global Admin
+      let companyProfileId = null;
+      if (isGlobal) {
+        if (r.companyName) {
+          const company = companies.find(c => normalize(c.companyName) === normalize(r.companyName));
+          if (!company) {
+            console.warn(`Company not found: "${r.companyName}"`);
+            errors.push(`Company "${r.companyName}" not found for ledger "${r.ledgerName}"`);
+            errorCount++;
+            continue;
+          }
+          companyProfileId = company.companyID;
+        } else if (r.companyProfileId) {
+          companyProfileId = Number(r.companyProfileId);
+        }
+      }
+
+      const payload = {
+        ledgerName: r.ledgerName,
+        groupID,
+        openingBalance: r.openingBalance ? Number(r.openingBalance) : 0,
+        balanceType: (r.balanceType || "").toUpperCase() === "C" ? "C" : "D",
+        isActive: safeBoolean(r.isActive),
+        address: r.address || "",
+        city: r.city || "",
+        state: r.state || "",
+        pincode: r.pincode || "",
+        phone: r.phone || "",
+        email: r.email || "",
+        gstin: r.gstin || "",
+        pan: r.pan || "",
+        ...(isGlobal ? { companyProfileId } : {}),
+        ...(isAdmin && !isGlobal && user?.companyId ? { companyProfileId: user.companyId } : {}),
+      };
+
+      await api.post("/Ledger", payload);
+      successCount++;
+    } catch (err) {
+      console.warn("Skipped row due to error:", r, err);
+      errors.push(`Failed to import ledger "${r.ledgerName}": ${err?.response?.data?.message || 'Unknown error'}`);
+      errorCount++;
+    }
+  }
+
+  toast.dismiss("import-loading");
+
+  if (successCount > 0) {
+    toast.success(`Import completed: ${successCount} records added${errorCount > 0 ? `, ${errorCount} failed` : ''}`);
+  } else {
+    toast.error(`Import failed: ${errorCount} records had errors`);
+  }
+
+  if (errors.length > 0) {
+    const errorSummary = errors.slice(0, 5).join('\n');
+    const moreErrors = errors.length > 5 ? `\n... and ${errors.length - 5} more errors` : '';
+    toast.error(`Import errors:\n${errorSummary}${moreErrors}`, { autoClose: 8000 });
+  }
+
+  fetchLedgers();
+  if (fileInputRef.current) fileInputRef.current.value = "";
+  setImporting(false);
+};
 
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext === "csv") {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
-        complete: (res) => processRows(res.data),
+        complete: async (res) => await processRows(res.data),
       });
     } else if (["xlsx", "xls"].includes(ext)) {
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data);
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(ws);
-      processRows(json);
+      await processRows(json);
     } else {
       toast.error("Unsupported file type");
+      setImporting(false);
     }
   };
 
-  // Create a map of companyId -> name for display if needed
   const companyMap = useMemo(() => {
     const map = {};
     companies.forEach(c => {
@@ -314,7 +462,6 @@ export default function Ledger() {
 
   return (
     <div className="container-fluid">
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
         <h5 className="mb-0" style={{ color: 'rgba(17, 82, 73, 0.95)' }}>Ledger Master</h5>
         <Button
@@ -332,10 +479,8 @@ export default function Ledger() {
         </Button>
       </div>
 
-      {/* Filters and Actions */}
       <div className="border p-2 bg-light mb-2">
         <div className="row gx-2 gy-2 align-items-center">
-          {/* Company Filter (for GlobalAdmin) */}
           {isGlobal && (
             <div className="col-auto">
               <InputGroup size="sm">
@@ -358,7 +503,6 @@ export default function Ledger() {
             </div>
           )}
 
-          {/* Search */}
           <div className="col-auto">
             <InputGroup size="sm">
               <InputGroup.Text><BsSearch /></InputGroup.Text>
@@ -373,7 +517,6 @@ export default function Ledger() {
             </InputGroup>
           </div>
 
-          {/* Export/Import Buttons */}
           <div className="col-md-auto d-flex flex-wrap gap-2">
             <Button
               size="sm"
@@ -418,19 +561,21 @@ export default function Ledger() {
               <Form.Label
                 className="btn btn-sm mb-0"
                 style={{
-                  cursor: "pointer",
-                  backgroundColor: "#0d6efd",
-                  borderColor: "#0a58ca",
+                  cursor: importing ? "not-allowed" : "pointer",
+                  backgroundColor: importing ? "#6c757d" : "#0d6efd",
+                  borderColor: importing ? "#5c636a" : "#0a58ca",
                   borderRadius: "50px",
-                  color: "#fff"
+                  color: "#fff",
+                  opacity: importing ? 0.65 : 1
                 }}
               >
-                <BsUpload /> Import
+                <BsUpload /> {importing ? "Importing..." : "Import"}
                 <Form.Control
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,.xlsx,.xls"
                   onChange={onImportFile}
+                  disabled={importing}
                   hidden
                 />
               </Form.Label>
@@ -459,7 +604,7 @@ export default function Ledger() {
                   <BeatLoader
                     size={10}
                     margin={4}
-                    color="#177366" // matching your green theme
+                    color="#177366"
                     loading={true}
                     speedMultiplier={1.5}
                   />
@@ -629,24 +774,20 @@ export default function Ledger() {
       </Modal>
 
       <style>
-        {
+        {`
+          .modal-title-custom {
+            color: #fff;
+          }
 
-          `.modal-title-custom {
-  color: #fff; /* white text */
-}
+          .custom-modal-header {
+            background-color: rgba(23,115,102,0.95);
+            color: #fff;
+          }
 
-.custom-modal-header {
-  background-color: rgba(23,115,102,0.95); /* your green */
-  color: #fff;
-}
-
-/* Make close button icon white */
-.custom-modal-header .btn-close {
-  filter: brightness(0) invert(1);
-}
-
-          `
-        }
+          .custom-modal-header .btn-close {
+            filter: brightness(0) invert(1);
+          }
+        `}
       </style>
 
     </div>
