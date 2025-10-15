@@ -42,7 +42,8 @@ export default function VoucherType() {
     startNumber: '',
     currentNumber: '',
     resetOn: '',
-    companyProfileId: isGlobal ? '' : undefined
+    companyProfileId: isGlobal ? '' : undefined,
+    isActive: true
   });
 
   useEffect(() => {
@@ -72,6 +73,8 @@ export default function VoucherType() {
       if (isGlobal && companyFilter) {
         params.append('companyProfileId', companyFilter);
       }
+      // Include inactive items
+      params.append('includeInactive', 'true');
 
       const qs = params.toString();
       if (qs) url += `?${qs}`;
@@ -94,7 +97,8 @@ export default function VoucherType() {
       startNumber: '',
       currentNumber: '',
       resetOn: '',
-      companyProfileId: isGlobal ? '' : undefined
+      companyProfileId: isGlobal ? '' : undefined,
+      isActive: true
     });
     setShow(true);
   };
@@ -108,6 +112,7 @@ export default function VoucherType() {
       startNumber: row.startNumber || '',
       currentNumber: row.currentNumber || '',
       resetOn: row.resetOn || '',
+      isActive: row.isActive ?? true,
       ...(isGlobal ? { companyProfileId: row.companyProfileId || '' } : {})
     });
     setShow(true);
@@ -122,6 +127,7 @@ export default function VoucherType() {
       startNumber: Number(form.startNumber) || 0,
       currentNumber: Number(form.currentNumber) || 0,
       resetOn: form.resetOn,
+      isActive: form.isActive,
       ...(isGlobal
         ? { companyProfileId: Number(form.companyProfileId) }
         : isAdmin && user?.companyId
@@ -208,7 +214,7 @@ export default function VoucherType() {
 
   const downloadSample = () => {
     const sample = [
-      { voucherName: 'Sales Invoice', prefix: 'SI-', suffix: '', startNumber: 1, currentNumber: 1, resetOn: 'Yearly' }
+      { voucherName: 'Sales Invoice', prefix: 'SI-', suffix: '', startNumber: 1, currentNumber: 1, resetOn: 'Yearly', isActive: true }
     ];
     const csv = Papa.unparse(sample);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -230,6 +236,7 @@ export default function VoucherType() {
             startNumber: Number(r.startNumber) || 0,
             currentNumber: Number(r.currentNumber) || 0,
             resetOn: r.resetOn,
+            isActive: r.isActive ?? true,
             ...(isAdmin && user?.companyId ? { companyProfileId: user.companyId } : {})
           });
         } catch { }
@@ -348,6 +355,7 @@ export default function VoucherType() {
               <th>Start No</th>
               <th>Current No</th>
               <th>Reset On</th>
+              <th>Status</th>
               {isGlobal && <th>Company</th>}
               <th className="text-end">Actions</th>
             </tr>
@@ -355,13 +363,13 @@ export default function VoucherType() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={isGlobal ? 8 : 7} className="text-center py-4">
+                <td colSpan={isGlobal ? 9 : 8} className="text-center py-4">
                   <BeatLoader size={10} color="#177366" />
                 </td>
               </tr>
             ) : pageRows.length === 0 ? (
               <tr>
-                <td colSpan={isGlobal ? 8 : 7} className="text-center">No data</td>
+                <td colSpan={isGlobal ? 9 : 8} className="text-center">No data</td>
               </tr>
             ) : (
               pageRows.map(r => (
@@ -372,6 +380,15 @@ export default function VoucherType() {
                   <td>{r.startNumber}</td>
                   <td>{r.currentNumber}</td>
                   <td>{r.resetOn}</td>
+                  <td>
+                    <span style={{
+                      display: 'inline-block',
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '6px',
+                      backgroundColor: r.isActive ? 'green' : 'red'
+                    }}></span>
+                  </td>
                   {isGlobal && <td>{companyMap[r.companyProfileId] || '-'}</td>}
                   <td className="text-end">
                     <div className="d-flex gap-2 justify-content-end">
@@ -459,6 +476,15 @@ export default function VoucherType() {
               />
             </Form.Group>
 
+            <Form.Group className="mb-2">
+              <Form.Check
+                type="switch"
+                label={form.isActive ? "Active" : "Inactive"}
+                checked={form.isActive}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+              />
+            </Form.Group>
+
             {isGlobal && (
               <Form.Group className="mb-2">
                 <Form.Label>Company</Form.Label>
@@ -483,24 +509,18 @@ export default function VoucherType() {
         </Form>
       </Modal>
       <style>
-        {
-
-          `.modal-title-custom {
-  color: #fff; /* white text */
-}
-
-.custom-modal-header {
-  background-color: rgba(23,115,102,0.95); /* your green */
-  color: #fff;
-}
-
-/* Make close button icon white */
-.custom-modal-header .btn-close {
-  filter: brightness(0) invert(1);
-}
-
-          `
-        }
+        {`
+          .modal-title-custom {
+            color: #fff; /* white text */
+          }
+          .custom-modal-header {
+            background-color: rgba(23,115,102,0.95);
+            color: #fff;
+          }
+          .custom-modal-header .btn-close {
+            filter: brightness(0) invert(1);
+          }
+        `}
       </style>
     </div>
   );
